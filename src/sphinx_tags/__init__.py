@@ -7,7 +7,7 @@ from sphinx.util.docutils import SphinxDirective
 from docutils import nodes
 from pathlib import Path
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 logger = getLogger("sphinx-tags")
 
@@ -36,16 +36,6 @@ class TagLinks(SphinxDirective):
         result += nodes.inline(text=self.env.app.config.tags_intro_text)
         count = 0
 
-        '''
-
-        THIS IS NOT THE RIGHT PLACE
-
-        for file in os.listdir(os.path.join(self.env.app.srcdir, self.env.app.config.tags_output_dir)):
-            if file.endswith('md') or file.endswith('rst'):
-                os.remove(os.path.join(self.env.app.srcdir, self.env.app.config.tags_output_dir, file))
-
-        '''
-
         for tag in tags:
             count += 1
             # We want the link to be the path to the _tags folder, relative to this document's path
@@ -57,7 +47,6 @@ class TagLinks(SphinxDirective):
             #   |
             #    - current_doc_path
             docpath = Path(self.env.doc2path(self.env.docname)).parent
-
          
             rootdir = os.path.relpath(
                 os.path.join(self.env.app.srcdir, self.env.app.config.tags_output_dir),
@@ -100,9 +89,11 @@ class Tag:
         srcdir : str
             root folder for the documentation (usually, project/docs)
         tags_page_title: str
-            the title of the tag page, after which the tag is listed (e.g. "Tag: ...")
+            the title of the tag page, after which the tag is listed (e.g. "Tag: programming")
         tags_page_header: str
-            the words after which the pages with the tag are listed, e.g. "With this tag")
+            the words after which the pages with the tag are listed, e.g. "With this tag: Hello World")
+        tag_intro_text: str
+            the words after which the tags of a given page are listed, e.g. "Tags: programming, python")
 
 
         """
@@ -238,9 +229,15 @@ def assign_entries(app):
 def update_tags(app):
     """Update tags according to pages found"""
     if app.config.tags_create_tags:
+
         tags_output_dir = Path(app.config.tags_output_dir)
+
         if not os.path.exists(os.path.join(app.srcdir, tags_output_dir)):
             os.makedirs(os.path.join(app.srcdir, tags_output_dir))
+
+        for file in os.listdir(os.path.join(app.srcdir, tags_output_dir)):        
+            if file.endswith('md') or file.endswith('rst'):
+                os.remove(os.path.join(app.srcdir, tags_output_dir, file))                
 
         # Create pages for each tag
         tags, pages = assign_entries(app)
